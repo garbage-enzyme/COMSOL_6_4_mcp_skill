@@ -153,6 +153,4 @@ C = m.evaluate('2*es.intWe/(1[V])^2','pF')   # ← [V]^2 必须加括号
 - 边界坐标确认：用 Box selection（condition='inside'）按 z 坐标筛边界编号
 - 场变量评估：`m.evaluate('V')` 返回 numpy 数组，配合 `m.evaluate('z')` 查指定面电势
 - 对比实验判断材料是否生效：改 eps_r 看 We 是否按比例变（不变则 fsp1 主导，需加 ccn1）
-
-## 已知缺口
-- `geometry_get_boundaries` 工具返回 nBoundaries/nDomains 但**不返回每个边界的坐标/法向**，且当前报 `'ComponentGeomListClient' object is not subscriptable`（`_get_geometry_node` 用 `jm.component(name)` 取 comp 后 `comp.geom()` 下标访问的 clientapi 兼容问题未修）。判断具体边界编号请用上面的 Box selection 方法绕过。
+- `geometry_get_boundaries` 现已返回每边界的 `normal`（法向）+ `center`（中心坐标）+ 整体 `bounding_box`，直接用法向判断哪个面是 z=0（法向 [0,0,-1]）等，无需手动建 Box selection
