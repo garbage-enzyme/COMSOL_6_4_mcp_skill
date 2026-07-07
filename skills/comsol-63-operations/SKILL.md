@@ -189,9 +189,31 @@ ltr.set('lth', str(t_au))
 
 输出文件：`C:\Users\陆星\Desktop\MIM_paper_baseline_v1.mph`（baseline 已跑通：R 值与连续膜一致）。
 
+## MIM patch MCP 工具（src/tools/mim_patch.py，commit 1ba6a0a + 57801a5）
+三个 MIM patch 工作流辅助工具，端到端测试于 MIM_paper_baseline_v1 → patch 几何 + mesh 自动构建成功（3 dom, 17 bnd, 18837 elements）。
+
+### 1. geometry_probe_domains
+- 增强版 `geometry_get_boundaries`：每 bnd 带 up/down domain、interior flag、normal、center；额外返回 `interior_boundaries`（up!=0 and down!=0）、`pairs`（comp.pair().tags()）、`side_pairs`（自动分类 cell 周期单元边）。
+- side_pairs 分类依据：法向 + **中心点坐标**双重过滤（用 `geom.getBoundingBox()` 作 bbox），tol=1e-12。**只用法向会把 patch 侧面/顶面误判成 cell 边界**（commit 57801a5 修复）——CopyFace 会因此把 patch 侧面网格复制到 cell 边界，break Floquet mesh 兼容。
+- 例：3 dom patch 几何，`x_src=[1,4]`（cell 边 x=0），不含 patch 侧面 bnd10（x=L/2）。
+
+### 2. mim_patch_build(patch_size=[L,L,h], patch_pos=[x0,y0,d])
+- 从 2-dom baseline（Al2O3+air）构建 patch 几何：Block + Difference(keepsubtract=True) → FormUnion（imprint 自动）+ 更新 LayeredTransition→patch footprint (interior bnd where up=patch_dom, down=al2_dom) + LayeredImpedance→bottom + air material→patch_dom + FreeTri+CopyFace+FreeTet mesh。
+- **参数**：patch_size/patch_pos 单位米。论文值 L=0.856µm, h=0.10µm, pos=[(P-L)/2,(P-L)/2,d=4e-8]。
+- **air_block_tag 自动检测**：找 `size` z 分量 > 1e-7 的 Block feature（air 块比 Al2O3 高得多）。
+- **patch_dom = n_domains**（最后添加的 dom）。
+- **已知 limitation**：若旧 `_identify_side_pairs` 缺坐标过滤 → PS port set 多个 bnd 报"只允许单个边界"。57801a5 修复后正常。
+
+### 3. mim_evaluate_spectral
+- 一行 evaluate `ewfd.Rtotal`/`Ttotal`/`Atotal` + `wl` 参数，返回 `{wl_um, Rtotal, Ttotal, Atotal, emissivity}` 列表，emissivity=1-R。
+- 实测 patch_final：ε@4-5µm≈0.89（论文 MP1@4.37µm ε≈0.95），ε@2µm≈0.88（论文 MP2@2.27µm ε≈0.5）。
+- 底层 `model.evaluate(expr_list)`，wl 列 ×1e6 转 µm。**注意添加 'wl' 参数后再调，否则 KeyError**。
+
 ## 调试技巧
 - 探测 clientapi 方法/重载：`for mth in obj.getClass().getMethods(): if str(mth.getName())=='create': ...`（JPype 反射，注意 `str(p.getName())` 避免 Java String 报错）。
 - 几何 bbox：`g.getBoundingBox()` 返回 `[xmin,xmax,ymin,ymax,zmin,zmax]`。
 - `geometry_get_boundaries` 返回每边界的 normal + center + bounding_box，直接用法向判断面。
+- **辨别 cell 边 vs interior patch 边必须看中心坐标**（法向不够）：cell 边在 x=0/P, y=0/P, z=0/H；patch 边在 x=L/2 ± L/2, z=d+h 等。
 - 对比实验判断材料是否生效：改 eps_r 看 We 是否按比例变（不变则 fsp1 主导，需加 ccn1）。
 - standalone 脚本断开后无法在同一 Python 进程再起新 mph.Client（"Only one client can be instantiated per Python session"）— 必须**重启 opencode**。crawl_mph 脚本障碍 → 建议各 probe/inspect 操作合并到一次脚本里跑完。
+- **改 MCP server src/tools/ 后必须重启 opencode**（MCP 是子进程，不热加载）。本会话测的源码修改会等下次重启才生效。
