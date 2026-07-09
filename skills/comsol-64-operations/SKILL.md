@@ -279,6 +279,25 @@ For 3D periodic structures with expensive narrow features (high Q resonances), u
 - In a verified In:CdO MIM run, focused fine sweeps moved one mid-density point back to the paper peak and confirmed another point's higher FEM global peak within tolerance. Use focused fine sweeps before calling a side peak physical or spurious.
 - Point-field profiles at competing wavelengths can show whether peaks belong to the same mode family. Similar field distributions imply a method/boundary-condition residual rather than a simple material-parameter error.
 
+### Field-profile export (verified on Zhou2025 QBIC, 146k integration pts)
+For 3D periodic structures, use `m.evaluate(exprs)` to get field data at all integration points:
+```python
+res = m.evaluate(["ewfd.normE", "abs(ewfd.Ex)", "abs(ewfd.Ey)", "abs(ewfd.Ez)", "x", "y", "z"])
+# res is a list of arrays in the same order as exprs
+normE = np.array(res[0]); Ex = np.array(res[1]); x = np.array(res[4])
+```
+Filter to 2D slices by coordinate tolerance, then `scipy.griddata` interpolate to regular grid + `matplotlib.pcolormesh`:
+```python
+tol = 5e-8
+mask = np.abs(z - z_slice) < tol
+xi = np.linspace(x[mask].min(), x[mask].max(), 200)
+yi = np.linspace(y[mask].min(), y[mask].max(), 400)
+XI, YI = np.meshgrid(xi, yi)
+EI = griddata((x[mask], y[mask]), normE[mask], (XI, YI), method="linear")
+plt.pcolormesh(XI, YI, EI, shading="auto")
+```
+**Findings** (Zhou2025 QBIC): Ex+Ez dominate over Ey in the TE QBIC mode (scattered field creates x-z components despite Ey-polarized excitation). Field max ~1.8e8 V/m localized at pillar region.
+
 ## Zhou 2024 1D hybrid metagrating (verified recipe)
 Paper: Zhou et al., IEEE Sensors Journal 24(13), 2024. Structure: 1D Au grating + aSi cladding. TM excites leaky SPP on Au; TE excites MaGMR (guided-mode resonance) in aSi.
 
