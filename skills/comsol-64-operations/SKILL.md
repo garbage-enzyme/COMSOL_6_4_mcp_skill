@@ -254,27 +254,80 @@ ltr.set('lth', str(t_au))
 - In a verified In:CdO MIM run, focused fine sweeps moved one mid-density point back to the paper peak and confirmed another point's higher FEM global peak within tolerance. Use focused fine sweeps before calling a side peak physical or spurious.
 - Point-field profiles at competing wavelengths can show whether peaks belong to the same mode family. Similar field distributions imply a method/boundary-condition residual rather than a simple material-parameter error.
 
-## Zhou 2024 1D hybrid metagrating notes
-- Paper target: Zhou et al., IEEE Sensors Journal 24(13), 2024, DOI `10.1109/JSEN.2024.3400828`.
-- Structure: 1D Au grating plus aSi cladding. TM excites SPPs on Au; TE excites MaGMR in aSi.
-- Supplementary material notes: Fig. S1 plots Palik-derived aSi/Au dielectric constants but does not provide a numeric table. Use Palik interpolation or digitize S1 for precision matching. First-pass aSi can be nearly lossless with `eps ~= 11.90`; Au must remain wavelength-dispersive.
-- SI controls: S2 flat dielectric/metal stack has no dual peaks; S3 W sweep strongly shifts TM but barely moves TE; S6 normal incidence and 8 degree oblique incidence along the ridge are nearly identical; S7 +/-25 nm random period/width errors weakly perturb spectra.
-- Targets:
-  | Structure | P | W | H2 | H1 | TE peak | TM peak |
-  | --- | --- | --- | --- | --- | --- | --- |
-  | I | 1.40 um | 0.70 um | 0.10 um | 0.44 um | 3.31 um | 4.23 um |
-  | II | 1.75 um | 0.80 um | 0.10 um | 0.61 um | 4.28 um | 5.27 um |
-  | III | 2.00 um | 0.90 um | 0.10 um | 0.61 um | 4.61 um | 5.71 um |
-- Start with Structure II. Prefer a 2D x-z unit cell with x periodicity and ridge direction y; fall back to a thin 3D periodic cell only if TE/TM setup is blocked.
-- Polarization map: TE = E parallel to ridge, dominant Ey, MaGMR/aSi mode; TM = Ex/Ez, SPP/Au-surface mode. Verify with field profiles before trusting labels.
-- Geometry first guess: total Au 200 nm, etched grating depth H2=100 nm, residual Au mirror 100 nm, ridge width W, period P, flat aSi cladding thickness H1. If peaks shift systematically, test whether H1 is measured from groove bottom rather than ridge top.
-- Smoke sweep Structure II over 3.5-6.0 um at 0.05 um step; refine peaks at 0.005-0.01 um for Q extraction. Structure II Q targets are TE ~126 and TM ~51.
-- Fig.2 sweeps after smoke validation: P 1.4-1.9 um, H1 0.5-0.8 um plus 0.8-2.5 um for FP coupling, H2 0.08-0.11 um, and W sweep from SI Fig. S3.
+## Zhou 2024 1D hybrid metagrating (verified recipe)
+Paper: Zhou et al., IEEE Sensors Journal 24(13), 2024. Structure: 1D Au grating + aSi cladding. TM excites leaky SPP on Au; TE excites MaGMR (guided-mode resonance) in aSi.
 
-### Zhou2024 3D thin-cell update
-- If a 2D `plasmonic_wire_grating` template locks TM to the bulk SPP near `6.025 um` or cannot run TE/Ey, switch the main route to a thin 3D periodic cell. 3D `PeriodicStructure` supports `LinearPol = S/P/Mixed` when `rdir1` is set.
-- Validated Structure II smoke after `rdir1=edge17`: P/TM at `5.27 um` gives `R=0.191165`, `A=0.808818`, `T~=0`, `R+T+A=1.000000`; P at `6.025 um` drops to `A=0.033004`. This indicates the 3D route excites the paper-like leaky SPP instead of the 2D bulk-SPP control.
-- TE/S at `4.28 um` was still weak (`A~=0.047793`) in the first smoke. Next diagnostics: verify Ey field localization in aSi with field profiles, test `LinearPol=S/Mixed`, and if needed test a different top-port reference edge such as the edge along `y` to confirm S/P mapping.
+### Key results (Structure II, 3D thin-cell FEM)
+| Mode | FEM | Paper | Q | Emissivity |
+| --- | --- | --- | --- | --- |
+| TM SPP | 5.295 µm | 5.27 µm | 46 | 0.993 |
+| TE MaGMR | 4.360 µm | 4.28 µm | 125 | 0.982 |
+Geometry: P=1.75µm, W=0.80µm, H2=0.10µm (groove depth), H1=0.61µm (aSi on ridge), Au mirror 0.10µm. Materials: Au Drude (wp=1.37e16, gamma=1e14), aSi lossless eps=11.9, Air eps=1. Mesh: ~12k elements, ~2s/solve per wl.
+
+### Targets (all three structures)
+| Structure | P | W | H2 | H1 | TE peak | TM peak |
+| --- | --- | --- | --- | --- | --- | --- |
+| I | 1.40 µm | 0.70 µm | 0.10 µm | 0.44 µm | 3.31 µm | 4.23 µm |
+| II | 1.75 µm | 0.80 µm | 0.10 µm | 0.61 µm | 4.28 µm | 5.27 µm |
+| III | 2.00 µm | 0.90 µm | 0.10 µm | 0.61 µm | 4.61 µm | 5.71 µm |
+
+### Polarization mapping
+- TE = E field parallel to ridge (y-direction). Dominant Ey, MaGMR mode in aSi layer.
+- TM = E field in incidence plane (xz). Dominant Ex/Ez, SPP on Au surface.
+- Always verify with field profiles before trusting polarization labels.
+
+## 2D template trap for grating metagratings
+- `plasmonic_wire_grating.mph` (2D x-z template) can only do `LinearPol='P'` (TM). Cannot represent TE/Ey MaGMR (out-of-plane E needs different physics interface).
+- 2D TM response locks to **bulk SPP** at `λ ≈ P * sqrt(eff_eps)`, with effective index near the grating dielectric constant's sqrt. H1, Q, and mesh refinement cannot move the peak away from this asymptote.
+- **Lesson**: 1D dual-polarization metagratings require a **3D thin-cell unit cell** with `PeriodicStructure` and `LinearPol = S/P` switching.
+
+## 3D thin-cell PeriodicStructure for 1D gratings
+
+### rdir1 edge selection (required for 3D)
+- From-scratch 3D `PeriodicStructure` may leave `rdir1` selection empty. Symptom: `comp1.ewfd.axisy` undefined at solve.
+- Fix: select one edge on the top (excited) port, parallel to the periodicity direction. Then set `wee1` to `RelativePermittivity` and call `addDiffractionOrders`.
+```python
+ps.feature("rdir1").selection().set([edge_on_top_port])
+wee = ps.feature("wee1")
+wee.set("DisplacementFieldModel", "RelativePermittivity")
+wee.set("mur_mat", "userdef"); wee.set("mur", "1")
+wee.set("sigma_mat", "userdef"); wee.set("sigma", "0")
+ps.runCommand("addDiffractionOrders")
+```
+
+### Thin-cell geometry setup
+- Build unit cell in 3D with y-extent thin enough for one mesh layer (e.g. 400 nm for λ~3-6µm, mesh 1-2 elements in y).
+- Use `FreeTri` on source faces → `CopyFace` (src→dst) → `FreeTet` on volumes.
+- `CopyFace` order: x_src→x_dst, then y_src→y_dst. The mesher needs aligned periodic face meshes for Floquet compatibility.
+
+### Staged sweep for field-profile-resistant modes
+- `Parametric` sweep + `Wavelength` step. Set `plist="wl"` on the wavelength step, `pname="wl"` on the parametric sweep, `plistarr` with comma-separated wavelengths, `punit="m"`.
+- For dual-polarization: two complete solve-evaluate cycles. After solving P, re-set `ps.set("LinearPol","S")`, solve again.
+
+## Staged sweep resilience pattern (COMSOL standalone scripts)
+- **One wavelength per solve**: `jm.param().set("wl", value)` → `jm.study("std1").run()` → evaluate → append CSV row. Avoids losing all results to a long sweep timeout.
+- **Resume**: script reads existing CSV first, skips already-computed wavelengths, runs only pending points.
+- **Tee logging**: stdout/stderr simultaneously written to `.log` file for post-mortem after interruption.
+- **Hard exit**: `os._exit(0)` at end to force JVM shutdown (standalone mph.Client leaves non-daemon threads).
+
+## Field profile export workaround (client-server mode)
+- `Image3D` export nodes in client-server COMSOL may not produce PNG files (the server has no local rendering context).
+- **Workaround**: evaluate field expressions at mesh nodes, filter to slice plane, interpolate to regular grid, plot with matplotlib.
+```python
+data = model.evaluate(["ewfd.normE", "x", "y", "z"])
+vals, x, y, z = [np.array(d) for d in data]
+mask = np.abs(y) < 1e-10  # y≈0 slice
+xs, zs, vs = x[mask], z[mask], vals[mask]
+from scipy.interpolate import griddata
+xi = np.linspace(xs.min(), xs.max(), NX)
+zi = np.linspace(zs.min(), zs.max(), NZ)
+XI, ZI = np.meshgrid(xi, zi)
+grid = griddata((xs, zs), vs, (XI, ZI), method="linear")
+# Then matplotlib pcolormesh + savefig
+```
+- Verification pattern for SPP vs MaGMR:
+  - TM SPP: `|Ex|` and `|Ez|` dominate (max ~1e8), `|Ey|` near zero (max ~1e6).
+  - TE MaGMR: `|Ey|` dominates (max ~1e8), `|Ex|` and `|Ez|` near zero.
 
 ## 调试技巧
 - 探测 clientapi 方法/重载：`for mth in obj.getClass().getMethods(): if str(mth.getName())=='create': ...`（JPype 反射，注意 `str(p.getName())` 避免 Java String 报错）。
