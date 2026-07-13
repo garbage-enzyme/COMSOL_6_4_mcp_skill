@@ -14,11 +14,39 @@ How to drive COMSOL 6.4+ via the comsol MCP server, and clientapi pitfalls you m
 - Interactive MCP sessions: start COMSOL with `comsol_start`; its first-call timeout is normal, so poll `comsol_status` rather than retrying. Durable H1 jobs are different: their detached worker starts `mph.Client` only after M2 preflight and lease acquisition.
 - **After modifying `src/tools/` source, must restart the host agent/CLI** (MCP server is a subprocess, no hot-reload).
 
-### Current MCP capability gate (verified 2026-07-12)
+### Current MCP capability gate (verified 2026-07-13)
 
-- Call `capabilities` and `solver_status` before solver work. The calibrated fork's default `full` profile is a 98-tool backward-compatibility surface; its `wave_optics` profile is explicitly experimental, while ownership, model, geometry, mesh, study, results transport, staged CSV, and durable-job infrastructure are verified.
-- Treat runtime tool discovery as authoritative instead of embedding an old tool count in automation. Profile changes require an MCP-host restart.
-- `comsol_start` is nonblocking. Poll `comsol_status`; never call start again while `starting=true`.
+- Call `capabilities` and `solver_status` before solver work. The calibrated
+  fork defaults to the compact 38-tool `core` profile. Select the 46-tool
+  `wave_optics` profile for metasurface preflight and one-point audits. The
+  experimental 41-tool `semantic_docs` profile adds isolated manual retrieval;
+  the 103-tool `full` profile is for compatibility/debugging. Treat live
+  discovery as authoritative because later releases may add tools.
+- Profile selection is static through `COMSOL_MCP_PROFILE`; invalid names fail
+  startup and every change requires an MCP-host restart. `wave_optics` is the
+  recommended research profile; `full` is a migration/debug surface.
+- The bounded three-call evidence workflow is
+  `solver_status -> wave_optics_preflight -> wave_optics_point_audit`.
+  Preflight is read-only and solver-free. Point audit solves exactly one declared
+  wavelength, writes durable one-row artifacts, preserves raw R/T/A, wavelength,
+  loss, field, provenance, and cleanup evidence, and defaults to
+  `assessment.mode=evidence_only`.
+- Never interpret an evidence-only audit as project pass/fail. Only a caller-
+  supplied, hashed validation policy may classify passivity bounds, closure,
+  wavelength synchronization, polarization purity, loss agreement, or mesh gates.
+  Structure total field remains diagnostic and is not promoted to incident-field
+  evidence without a matching reference artifact.
+- Keep `core` plus `manual_search` as the documentation default. The H4f frozen
+  benchmark rejected promotion of the local English MiniLM hybrid retriever:
+  exact Recall@5 improved, but paraphrase/multi-concept Recall@5 regressed,
+  direct-Chinese Recall@5 was zero, negative-query abstention failed, and the
+  500-query worker RSS grew substantially. `semantic_docs` remains an opt-in
+  diagnostic profile, must report `promotion_status` as rejected, and must never
+  be described as verified or multilingual. Its worker is CPU-only, isolated,
+  exact-identity controlled, and must leave lexical search and solver ownership
+  responsive on failure.
+- `comsol_start` is nonblocking. Poll `comsol_status`; never call start again
+  while `starting=true`.
 
 ## Durable H1 jobs (same-host multi-agent control)
 
