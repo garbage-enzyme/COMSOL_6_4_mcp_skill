@@ -2,8 +2,8 @@
 
 @skills/comsol-64-metasurface/SKILL.md
 
----
+The import loads the short routing entry. Follow its relative links and read only
+the task-relevant files under `references/`; do not preload the full reference
+set.
 
-The import above pulls in the full `comsol-64-metasurface` skill (COMSOL 6.4+ with MPh 1.3.1 standalone / clientapi operations guide). Claude Code will use it automatically when a task matches the skill's `description` frontmatter.
-
-For tool-agnostic project rules also readable by Codex / Gemini CLI / Cursor, see `AGENTS.md`.
+For tool-agnostic repository guidance, also read `AGENTS.md`.

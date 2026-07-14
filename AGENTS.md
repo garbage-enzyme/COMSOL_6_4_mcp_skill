@@ -1,29 +1,32 @@
-# AGENTS.md — Codex / cross-tool entry point
+# AGENTS.md — cross-tool entry point
 
-This repository ships an **agent skill** at:
+This repository ships the `comsol-64-metasurface` agent skill at:
 
-```
+```text
 skills/comsol-64-metasurface/SKILL.md
 ```
 
-It is a focused instruction document (with YAML frontmatter) that teaches coding agents how to drive **COMSOL Multiphysics 6.4+** through the [comsol MCP server](https://github.com/garbage-enzyme/COMSOL_Multiphysics_MCP_6_4_Calibrated) with MPh 1.3.1 standalone / `clientapi`, and how to write or fix code in `src/tools/` when the clientapi wrapper's API differs from the direct `com.comsol.model.Model` API. It also covers runtime MCP capability/ownership gates, geometry probing, the exact Wave Optics physics constructor, oblique primitive cells, translation-congruent periodic meshes, and MIM Drude boundary workflows.
+Read that short routing entry before driving COMSOL 6.4+, using MPh standalone
+or a COMSOL MCP server, changing MCP tools, or auditing a periodic metasurface
+model. Then read each reference selected by its routing table completely. Do not
+preload every reference module.
 
-## When to read it
+The progressive-disclosure layout is intentionally portable across Claude Code,
+Codex CLI, and opencode:
 
-Read `skills/comsol-64-metasurface/SKILL.md` **before** doing any of these:
+- `SKILL.md` contains standard YAML `name` and `description` frontmatter plus the
+  short core workflow.
+- `references/*.md` contains task-specific detail linked with relative paths.
+- No platform-specific tool protocol is required to follow the skill.
 
-- Driving COMSOL 6.4+ via the comsol MCP server (any `comsol_*` tool call).
-- Writing or modifying code in the companion MCP server's `src/tools/` directory.
-- Debugging errors like `No matching overloads`, `Operation_cannot_be_created_in_this_context`, `'ComponentGeomListClient' object is not subscriptable`, or `'PhysicsFeatureClient' object has no attribute 'type'` on 6.4 standalone.
+The modules cover clientapi overloads, periodic Wave Optics, material/boundary
+formulations, durable jobs, Windows load stability, physical evidence, resource
+admission, typed derived-model mutation, deployment identity, release gates, and
+troubleshooting.
 
-The skill's frontmatter `description` is the matching signal for agents that support skill auto-loading (opencode, Claude Code). Codex reads AGENTS.md directly, so: **treat the skill file as required reading for COMSOL-related tasks.**
+Do not publish usernames, home directories, host-specific thresholds,
+credentials, private result values, or internal project/phase labels in this
+repository.
 
-## Why this skill exists
-
-Under `mph.Client(cores=...)` (MPh 1.3+ standalone), `model.java` returns `com.comsol.clientapi.impl.ModelClient` — a wrapper whose method overloads differ from the direct `com.comsol.model.Model` the upstream MCP code was written against. The skill documents every mismatch found + fixed in the companion fork, plus 6.3/6.4-specific traps (Electrostatics `fsp1` FreeSpace ignoring material ε_r, Block boundary numbering, `Terminal` V0 unreliable, `(1[V])^2` expression syntax, missing `m.study()`, `selection().entities()`, `geom.getUpDown()` no-arg form, fin FormAssembly via `action='assembly'+imprint=True`).
-
-Verified end-to-end: parallel-plate capacitor **C = 1.8593794420 pF** vs theory 1.8593794407 pF (err 7 × 10⁻¹⁰ pF); MIM paper baseline R matches Drude continuous Au across 1–10 µm; and a 2026-07-12 oblique CircularPol all-air cell solved with `R=1.32e-9`, `T=0.999999998677`, closure 1 after eliminating `src2dst_fpc1_ps1`.
-
-## Companion code
-
-The calibrated MCP server source lives at: https://github.com/garbage-enzyme/COMSOL_Multiphysics_MCP_6_4_Calibrated
+Companion MCP server:
+https://github.com/garbage-enzyme/COMSOL_Multiphysics_MCP_6_4_Calibrated
