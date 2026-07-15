@@ -7,6 +7,7 @@
 - Cancellation and recovery
 - Windows load hardening
 - Staged sweep persistence
+- Bounded validation matrices
 - Resource admission and telemetry
 - Unattended launchers
 
@@ -123,6 +124,40 @@ For disk-light point solves, allow successful point models to be removed only
 after the child evidence and matching aggregate row have both been flushed and
 `fsync`ed. Retain failed-point models and preserve the deletion policy in the
 run provenance.
+
+## Bounded validation matrices
+
+Use a matrix job only for a small, explicit set of evidence points. Its
+immutable spec must bind source/configuration hashes, exact point settings,
+collectors, one artifact identifier per collector, and caller-declared point,
+wall-time, and resource caps. Reject unknown, nonfinite, duplicate, or oversized
+inputs before acquiring ownership or creating a client.
+
+Serialize exact duplicate submissions under a bounded runtime-root lock and
+return the existing job. Reuse the established manager, lease, cancellation,
+resource journal, worker, and client paths; a matrix is orchestration, not a
+second solver runtime. Matrix-owned settings cannot be overridden by collector
+configuration.
+
+Keep attempts isolated. Each collector writes bounded evidence inside its
+attempt subtree and a small wrapper manifest that binds the inner artifact's
+hash and size. Append hash-chained, flushed, and `fsync`ed result rows. Resume
+may skip only complete, policy-evaluated rows with verified artifacts. Malformed,
+tampered, partial, or integrity-blocked rows must fail before client creation.
+
+A pre-solve resource refusal is a durable policy outcome, not a solve error, and
+must not create a false failed-solve row. Commit the durable result row before
+post-solve admission/telemetry. Replaying a verified row as `skip_completed` is
+normal recovery behavior.
+
+Real acceptance needs both off-target and target evidence plus a coordinator
+restart. For passive scattering, verify bounded `R`, `T`, and `A`, power closure,
+wavelength synchronization, source hash, unique row identities, complete
+artifact inventory, and absence of lease/collision residue.
+
+A fast read-only process inventory timeout does not prove cleanup. Retry with
+the mutation-grade fresh inventory deadline and validate existing durable
+evidence without rerunning physics.
 
 ## Resource admission and telemetry
 
