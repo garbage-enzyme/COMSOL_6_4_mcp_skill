@@ -2,9 +2,9 @@
 
 [中文](README_CN.md)
 
-A progressive-disclosure skill for COMSOL Multiphysics 6.4+, MPh 1.3.1
-standalone/clientapi, periodic Wave Optics, durable solver workflows, physical
-validation, and COMSOL MCP development.
+A progressive-disclosure skill for using COMSOL Multiphysics 6.4+ through a
+COMSOL MCP server or MPh 1.3.1 standalone/clientapi, with periodic Wave Optics,
+durable solver workflows, and physical validation.
 
 ## CLI compatibility
 
@@ -33,7 +33,6 @@ when their task area is needed.
 - Drude/loss signs, layered boundaries, dispersive sweeps, PML/manual Floquet;
 - durable jobs, cancellation, Windows sharing/identity stability, resource gates;
 - R/T/A, physical flux closure, wavelength sync, provenance, convergence, fields;
-- typed derived-model edits, bounded schemas, deployment identity, release gates;
 - MIM, grating, nanopillar, parameter-scan, and field-export recipes.
 
 ## Install
@@ -71,7 +70,6 @@ skills/comsol-64-metasurface/
     ├── clientapi-core.md
     ├── durable-runtime.md
     ├── materials-boundaries.md
-    ├── mcp-development.md
     ├── troubleshooting.md
     ├── validation-evidence.md
     ├── wave-optics-periodic.md

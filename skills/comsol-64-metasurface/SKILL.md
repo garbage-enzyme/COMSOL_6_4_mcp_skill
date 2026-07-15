@@ -1,6 +1,6 @@
 ---
 name: comsol-64-metasurface
-description: COMSOL Multiphysics 6.4+ and MPh 1.3.1 standalone/clientapi operations for MCP development, periodic Wave Optics and metasurface FEM, durable staged solves and bounded validation matrices, evidence validation, and production hardening. Use when driving COMSOL through an MCP server or mph.Client, writing or reviewing COMSOL MCP tools, debugging clientapi/periodic-mesh/port/material/study failures, running resumable sweeps or small durable evidence matrices, or auditing polarization, passivity, power closure, wavelength synchronization, mesh convergence, provenance, resource admission, and solver ownership.
+description: COMSOL Multiphysics 6.4+ and MPh 1.3.1 operations through a COMSOL MCP server or standalone/clientapi, periodic Wave Optics and metasurface FEM, durable staged solves and bounded validation matrices, evidence validation, and safe runtime practice. Use when driving COMSOL through an MCP server or mph.Client, debugging clientapi/periodic-mesh/port/material/study failures, running resumable sweeps or small durable evidence matrices, or auditing polarization, passivity, power closure, wavelength synchronization, mesh convergence, provenance, resource admission, and solver ownership.
 ---
 
 # COMSOL 6.4+ operations
@@ -44,15 +44,12 @@ Read each selected file completely before acting.
 | Solver ownership, durable jobs/validation matrices, cancellation, Windows load stability, resource telemetry/admission | [durable-runtime.md](references/durable-runtime.md) |
 | R/T/A, flux closure, polarization evidence, wavelength sync, provenance, convergence, fields | [validation-evidence.md](references/validation-evidence.md) |
 | MIM, gratings, nanopillars, parameter scans, field export, common modeling recipes | [workflow-recipes.md](references/workflow-recipes.md) |
-| MCP profiles, public recommended-skill scope, typed mutations, schemas, deployment identity, packaging, restart/release gates | [mcp-development.md](references/mcp-development.md) |
 | Error signatures and the smallest safe diagnostic | [troubleshooting.md](references/troubleshooting.md) |
 
 For a task spanning several areas, read only their union. Examples:
 
 - Periodic angle sweep: periodic + durable runtime + validation evidence.
 - New dispersive metasurface model: clientapi + periodic + materials + evidence.
-- MCP refactor/release: MCP development + durable runtime; add the physical
-  module only when a real model gate is required.
 
 ## Default execution sequence
 

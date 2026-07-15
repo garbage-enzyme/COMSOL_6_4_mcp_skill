@@ -7,8 +7,8 @@ skills/comsol-64-metasurface/SKILL.md
 ```
 
 Read that short routing entry before driving COMSOL 6.4+, using MPh standalone
-or a COMSOL MCP server, changing MCP tools, or auditing a periodic metasurface
-model. Then read each reference selected by its routing table completely. Do not
+or a COMSOL MCP server, or auditing a periodic metasurface model. Then read each
+reference selected by its routing table completely. Do not
 preload every reference module.
 
 The progressive-disclosure layout is intentionally portable across Claude Code,
@@ -21,8 +21,7 @@ Codex CLI, and opencode:
 
 The modules cover clientapi overloads, periodic Wave Optics, material/boundary
 formulations, durable jobs, Windows load stability, physical evidence, resource
-admission, typed derived-model mutation, deployment identity, release gates, and
-troubleshooting.
+admission, common modeling recipes, and troubleshooting.
 
 Do not publish usernames, home directories, host-specific thresholds,
 credentials, private result values, or internal project/phase labels in this
