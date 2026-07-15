@@ -114,6 +114,17 @@ After source changes:
 7. restart the MCP/CLI host because stdio servers do not hot reload;
 8. verify live deployment identity before any COMSOL action.
 
+When sibling stdio hosts are present, restart only the process whose PID,
+creation time, command, and parent identity match the intended deployment.
+Never terminate processes by a broad executable-name or command-substring match.
+
+Verify the installed restart through a fresh MCP `initialize`, tool discovery,
+and capability receipt rather than an import alone. Record the active profile,
+tool count, durable job types, deployment classification, and
+`COMSOL connected=false` before licensed work. If the original transport cannot
+reattach after its server exits, a bounded fresh-stdio receipt is valid restart
+evidence.
+
 Do not install/restart while another standalone solver can spawn child
 processes. After restart, query ownership first.
 
