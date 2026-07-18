@@ -35,6 +35,27 @@ Claude Code, Codex CLI, and opencode.
     model adoption, take turns rather than editing simultaneously, preserve the
     user's Server/Desktop/model on detach, and treat GUI visibility as distinct
     from verified scientific evidence.
+11. Use one shared project-root `settings.json` for every agent. Do not create
+    agent-specific copies of profile, runtime, path, Java, shared-server, or
+    evidence settings; pass only `COMSOL_MCP_SETTINGS_PATH` when the host cannot
+    preserve the project path.
+
+## Shared settings contract
+
+The COMSOL MCP project groups startup settings by function in its root
+`settings.json`, with English `_comment`/`_comment_*` fields because standard
+JSON has no comment syntax. Missing entries use safe defaults. An illegal value
+falls back only that entry and is reported through `capabilities` or
+`evidence_integrity_status` as a bounded `settings_errors` item; malformed JSON
+falls back to the complete safe default document and reports the error. Check
+`project_settings.configuration_state` before relying on a profile or path.
+
+For shared Desktop/Server work, set `profile.name` to `desktop_shared` and
+`shared_server.enabled` to `true` in that same file, then restart the MCP host.
+Evidence-integrity checks remain default-on in
+`evidence_integrity.checks`; only explicit JSON `false` is an exploration opt-out
+and it must propagate `strictly_verified: false`. The old individual environment
+variables are compatibility overrides, not the normal multi-agent configuration.
 
 ## Reference router
 
