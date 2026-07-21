@@ -224,6 +224,12 @@ Skip completed exact identities before setting parameters. Admit only whole
 stages that fit the remaining wall budget plus margin. Keep control polling and
 durable-row callbacks bounded so cancellation cannot starve.
 
+Order nested sweeps by the parameters that invalidate geometry, diffraction
+orders, or mesh. Put a mesh-dependent parameter on the outside and reuse one
+verified mesh only across inner parameters that cannot alter it. Persist the
+observed mesh identity under that same dependency key so resume rejects a
+changed mesh without imposing false equality across unrelated mesh states.
+
 Never edit a driver or child script that an active parent process may import or
 spawn later. Stop the owner at a durable boundary, defer the change, or create a
 new versioned path with new outputs and hashes.
@@ -339,6 +345,21 @@ from a different solver version, factorization path, mesh, or in-memory versus
 process-isolated configuration. Record per-level timings, update a bounded
 rolling estimate from completed points, and admit the next point only when that
 estimate plus margin fits the remaining wall budget.
+
+For a geometry sweep whose cell size or feature scale changes materially, smoke
+at least the expected smallest and largest mesh/resource cases. Verify topology,
+periodic selections, mesh identity, passive evidence, and cleanup at both ends;
+one representative geometry does not bound runtime or memory. Use the endpoint
+timings only as an initial bounded estimate and replace them with rolling
+completed-point telemetry.
+
+When an operator requires an absolute wall limit, use two clocks. Set a shorter
+worker limit that stops only between flushed point rows, then let the foreground
+launcher enforce the later absolute deadline against the exact owned process
+tree. The margin must exceed the expected longest point plus cleanup time. If
+the absolute guard fires, preserve prior durable rows, verify owned-process and
+lock absence, and write an atomic termination receipt; never label the
+interrupted point complete.
 
 Some standalone clients leave JVM/helper threads alive after all outputs are
 saved. After flushing every artifact, saving through the Java clientapi, and

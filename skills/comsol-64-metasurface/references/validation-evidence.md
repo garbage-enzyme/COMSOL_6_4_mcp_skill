@@ -148,6 +148,21 @@ Never mix rows from different geometry, materials, mesh, normalization, or
 selection definitions in one configuration. Re-hash the source after clone
 cleanup.
 
+Define mesh identity over the parameters that can actually change the mesh.
+Wavelength can alter diffraction orders or trigger a physics-controlled rebuild,
+so a single element/vertex count across all wavelengths may be an invalid gate.
+In that case, put wavelength on the outer loop, persist one observed mesh
+identity per wavelength, and require equality only across inner parameters that
+do not affect meshing. If the workflow explicitly builds at the shortest
+wavelength and reuses that mesh, key identity by geometry instead and verify the
+same count after every longer-wavelength solve. Record both the policy and the
+observed counts; neither pattern by itself establishes mesh convergence.
+
+If a physically valid row fails only because an earlier mesh-identity policy was
+scoped incorrectly, preserve that row and error status as diagnostic evidence.
+Create a versioned driver, manifest, and output path with the corrected
+dependency key; never relabel or overwrite the old row in place.
+
 For validation matrices, each result row must bind the immutable spec, exact
 point fingerprint, collector name, artifact identifier, and wrapper-manifest
 hash. Keep full evidence in bounded artifacts; status and list operations return

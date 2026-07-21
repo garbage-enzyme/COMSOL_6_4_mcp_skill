@@ -40,6 +40,7 @@
 | Periodic source/destination incompatible | Prove translation-congruent partitions and use `FreeTri -> CopyFace -> FreeTet`. |
 | CopyFace copies no target | Wrong boundary mapping/partition or missing congruence; re-probe centers, normals, adjacency, and translation. |
 | Periodic port selects several faces | Cell-side classification used normals only and included internal faces; add bounding-plane coordinate tests. |
+| A valid solve fails a fixed-mesh identity gate after changing wavelength or geometry | Audit which parameters drive diffraction orders, geometry, and physics-controlled meshing. Key identity by those axes, reorder the sweep accordingly, and preserve the old row under a versioned diagnostic output. |
 
 ## Ports and physics
 
