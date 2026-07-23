@@ -87,6 +87,7 @@ Read each selected file completely before acting.
 | --- | --- |
 | `ModelClient` overloads, components, geometry probing, electrostatics, heat transfer, study/result basics | [clientapi-core.md](references/clientapi-core.md) |
 | AC/DC magnetic-field interfaces, Coil features, Java-tag conversion, standalone cleanup, and one-point smoke | [magnetic-fields.md](references/magnetic-fields.md) |
+| **Only when COMSOL MCP is unavailable**: direct `mph` installation and standalone fallback, with manual ownership and evidence guards | [mcp-offline.md](references/mcp-offline.md) |
 | `PeriodicStructure`, `rdir1`, incidence angles, polarization, periodic mesh, oblique cells | [wave-optics-periodic.md](references/wave-optics-periodic.md) |
 | Drude/loss signs, layered boundaries, dispersive sweeps, PML, manual Floquet | [materials-boundaries.md](references/materials-boundaries.md) |
 | Solver ownership, shared Desktop/attached Server, durable jobs/validation matrices, cancellation, Windows load stability, resource telemetry/admission | [durable-runtime.md](references/durable-runtime.md) |
